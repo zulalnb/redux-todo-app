@@ -23,12 +23,19 @@ export const todosSlice = createSlice({
     activeFilter: "all",
   },
   reducers: {
-    addTodo: (state, action) => {
-      state.items.push({
-        id: nanoid(),
-        title: action.payload,
-        completed: false,
-      });
+    addTodo: {
+      reducer: (state, action) => {
+        state.items.push(action.payload);
+      },
+      prepare: (title) => {
+        return {
+          payload: {
+            id: nanoid(),
+            completed: false,
+            title,
+          },
+        };
+      },
     },
     toggle: (state, action) => {
       const id = action.payload;
