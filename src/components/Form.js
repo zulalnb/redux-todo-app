@@ -6,6 +6,7 @@ const Form = () => {
   const [title, setTitle] = useState("");
   const dispatch = useDispatch();
   const handleSubmit = (e) => {
+    if (!title.trim()) return;
     e.preventDefault();
     dispatch(addTodo(title));
     setTitle("");

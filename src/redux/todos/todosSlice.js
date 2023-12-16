@@ -50,6 +50,18 @@ export const todosSlice = createSlice({
   },
 });
 
+export const selectTodos = (state) => state.todos.items;
+
+export const selectFilteredTodos = (state) => {
+  const { activeFilter, items } = state.todos;
+  if (activeFilter === "all") {
+    return items;
+  }
+  return items.filter((todo) =>
+    activeFilter === "active" ? !todo.completed : todo.completed,
+  );
+};
+
 export const { addTodo, toggle, destroy, changeActiveFilter, clearCompleted } =
   todosSlice.actions;
 export default todosSlice.reducer;
