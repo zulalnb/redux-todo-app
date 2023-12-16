@@ -29,8 +29,13 @@ export const todosSlice = createSlice({
         completed: false,
       });
     },
+    toggle: (state, action) => {
+      const id = action.payload;
+      const item = state.items.find((item) => item.id === id);
+      item.completed = !item.completed;
+    },
   },
 });
 
-export const { addTodo } = todosSlice.actions;
+export const { addTodo, toggle } = todosSlice.actions;
 export default todosSlice.reducer;
