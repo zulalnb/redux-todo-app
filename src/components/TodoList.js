@@ -4,7 +4,7 @@ import {
   toggle,
   destroy,
   selectFilteredTodos,
-  getTodoAsync,
+  getTodosAsync,
 } from "../redux/todos/todosSlice";
 import Loading from "./Loading";
 import Error from "./Error";
@@ -16,7 +16,7 @@ const TodoList = () => {
   const error = useSelector((state) => state.todos.error);
 
   useEffect(() => {
-    dispatch(getTodoAsync());
+    dispatch(getTodosAsync());
   }, [dispatch]);
 
   const handleDestroy = (id) => {
@@ -25,12 +25,12 @@ const TodoList = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading.get) {
     return <Loading />;
   }
 
-  if (error) {
-    return <Error message={error} />;
+  if (error.get) {
+    return <Error message={error.get} />;
   }
 
   return (

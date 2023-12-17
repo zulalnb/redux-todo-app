@@ -1,10 +1,21 @@
-import { createAsyncThunk, createSlice, nanoid } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-export const getTodoAsync = createAsyncThunk(
+const baseUrl =
+  process.env.REACT_APP_API_BASE_ENDPOINT || "http://localhost:7000";
+
+export const getTodosAsync = createAsyncThunk(
   "todos/getTodosAsync",
   async () => {
-    const res = await axios.get("http://localhost:7000/todos");
+    const res = await axios.get(baseUrl + "/todos");
+    return res.data;
+  }
+);
+
+export const addTodoAsync = createAsyncThunk(
+  "todos/addTodosAsync",
+  async (data) => {
+    const res = await axios.post(baseUrl + "/toos", data);
     return res.data;
   }
 );
@@ -13,25 +24,11 @@ export const todosSlice = createSlice({
   name: "todos",
   initialState: {
     items: [],
-    isLoading: false,
-    error: null,
+    isLoading: { get: false, add: false },
+    error: { get: null, add: null },
     activeFilter: "all",
   },
   reducers: {
-    addTodo: {
-      reducer: (state, action) => {
-        state.items.push(action.payload);
-      },
-      prepare: (title) => {
-        return {
-          payload: {
-            id: nanoid(),
-            completed: false,
-            title,
-          },
-        };
-      },
-    },
     toggle: (state, action) => {
       const id = action.payload;
       const item = state.items.find((item) => item.id === id);
@@ -51,16 +48,27 @@ export const todosSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(getTodoAsync.pending, (state) => {
-      state.isLoading = true;
+    builder.addCase(getTodosAsync.pending, (state) => {
+      state.isLoading.get = true;
     });
-    builder.addCase(getTodoAsync.fulfilled, (state, action) => {
-      state.isLoading = false;
+    builder.addCase(getTodosAsync.fulfilled, (state, action) => {
       state.items = action.payload;
+      state.isLoading.get = false;
     });
-    builder.addCase(getTodoAsync.rejected, (state, action) => {
-      state.isLoading = false;
-      state.error = action.error.message;
+    builder.addCase(getTodosAsync.rejected, (state, action) => {
+      state.error.get = action.error.message;
+      state.isLoading.get = false;
+    });
+    builder.addCase(addTodoAsync.pending, (state) => {
+      state.isLoading.add = true;
+    });
+    builder.addCase(addTodoAsync.fulfilled, (state, action) => {
+      state.items.push(action.payload);
+      state.isLoading.add = false;
+    });
+    builder.addCase(addTodoAsync.rejected, (state, action) => {
+      state.isLoading.add = false;
+      state.error.add = action.error.message;
     });
   },
 });
@@ -77,6 +85,6 @@ export const selectFilteredTodos = (state) => {
   );
 };
 
-export const { addTodo, toggle, destroy, changeActiveFilter, clearCompleted } =
+export const { toggle, destroy, changeActiveFilter, clearCompleted } =
   todosSlice.actions;
 export default todosSlice.reducer;
