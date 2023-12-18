@@ -35,21 +35,37 @@ export const removeTodoAsync = createAsyncThunk(
     return id;
   }
 );
+export const removeCompletedTodosAsync = createAsyncThunk(
+  "todos/removeCompletedTodosAsync",
+  async () => {
+    const res = await axios.delete(`${baseUrl}/todos/completed`);
+    return res.data;
+  }
+);
 
 export const todosSlice = createSlice({
   name: "todos",
   initialState: {
     items: [],
-    isLoading: { get: false, add: false, toggle: false, remove: false },
-    error: { get: null, add: null, toggle: null, remove: null },
+    isLoading: {
+      get: false,
+      add: false,
+      toggle: false,
+      remove: false,
+      removeComp: false,
+    },
+    error: {
+      get: null,
+      add: null,
+      toggle: null,
+      remove: null,
+      removeComp: null,
+    },
     activeFilter: localStorage.getItem("activeFilter") || "all",
   },
   reducers: {
     changeActiveFilter: (state, action) => {
       state.activeFilter = action.payload;
-    },
-    clearCompleted: (state) => {
-      state.items = state.items.filter((item) => !item.completed);
     },
   },
   extraReducers: (builder) => {
@@ -102,6 +118,17 @@ export const todosSlice = createSlice({
       state.isLoading.toggle = false;
       state.error.toggle = action.error.message;
     });
+    builder.addCase(removeCompletedTodosAsync.pending, (state) => {
+      state.isLoading.removeComp = true;
+    });
+    builder.addCase(removeCompletedTodosAsync.fulfilled, (state, action) => {
+      state.items = action.payload;
+      state.isLoading.removeComp = false;
+    });
+    builder.addCase(removeCompletedTodosAsync.rejected, (state, action) => {
+      state.isLoading.removeComp = false;
+      state.error.removeComp = action.error.message;
+    });
   },
 });
 
@@ -117,5 +144,5 @@ export const selectFilteredTodos = (state) => {
   );
 };
 
-export const { changeActiveFilter, clearCompleted } = todosSlice.actions;
+export const { changeActiveFilter } = todosSlice.actions;
 export default todosSlice.reducer;

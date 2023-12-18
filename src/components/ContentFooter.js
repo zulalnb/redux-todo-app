@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   changeActiveFilter,
-  clearCompleted,
+  removeCompletedTodosAsync,
   selectTodos,
 } from "../redux/todos/todosSlice";
 
@@ -23,6 +23,10 @@ const ContentFooter = () => {
   useEffect(() => {
     localStorage.setItem("activeFilter", activeFilter);
   }, [activeFilter]);
+
+  const handleClearCompleted = async () => {
+    if (completedItems.length) await dispatch(removeCompletedTodosAsync());
+  };
 
   return (
     <footer className="footer">
@@ -68,12 +72,7 @@ const ContentFooter = () => {
         </li>
       </ul>
 
-      <button
-        className="clear-completed"
-        onClick={() => {
-          if (completedItems.length) dispatch(clearCompleted());
-        }}
-      >
+      <button className="clear-completed" onClick={handleClearCompleted}>
         Clear completed
       </button>
     </footer>
