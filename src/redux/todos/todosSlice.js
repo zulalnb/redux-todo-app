@@ -42,7 +42,7 @@ export const todosSlice = createSlice({
     items: [],
     isLoading: { get: false, add: false, toggle: false, remove: false },
     error: { get: null, add: null, toggle: null, remove: null },
-    activeFilter: "all",
+    activeFilter: localStorage.getItem("activeFilter") || "all",
   },
   reducers: {
     changeActiveFilter: (state, action) => {
