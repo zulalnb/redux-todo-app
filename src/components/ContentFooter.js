@@ -1,10 +1,7 @@
 import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  changeActiveFilter,
-  removeCompletedTodosAsync,
-  selectTodos,
-} from "../redux/todos/todosSlice";
+import { changeActiveFilter, selectTodos } from "../redux/todos/todosSlice";
+import { removeCompletedTodosAsync } from "../redux/todos/services";
 
 const ContentFooter = () => {
   const dispatch = useDispatch();
