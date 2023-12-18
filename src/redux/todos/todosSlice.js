@@ -15,8 +15,24 @@ export const getTodosAsync = createAsyncThunk(
 export const addTodoAsync = createAsyncThunk(
   "todos/addTodosAsync",
   async (data) => {
-    const res = await axios.post(baseUrl + "/toos", data);
+    const res = await axios.post(baseUrl + "/todos", data);
     return res.data;
+  }
+);
+
+export const toggleTodoAsync = createAsyncThunk(
+  "todos/toggleTodosAsync",
+  async ({ id, data }) => {
+    const res = await axios.patch(`${baseUrl}/todos/${id}`, data);
+    return res.data;
+  }
+);
+
+export const removeTodoAsync = createAsyncThunk(
+  "todos/removeTodoAsync",
+  async (id) => {
+    await axios.delete(`${baseUrl}/todos/${id}`);
+    return id;
   }
 );
 
@@ -24,22 +40,11 @@ export const todosSlice = createSlice({
   name: "todos",
   initialState: {
     items: [],
-    isLoading: { get: false, add: false },
-    error: { get: null, add: null },
+    isLoading: { get: false, add: false, toggle: false, remove: false },
+    error: { get: null, add: null, toggle: null, remove: null },
     activeFilter: "all",
   },
   reducers: {
-    toggle: (state, action) => {
-      const id = action.payload;
-      const item = state.items.find((item) => item.id === id);
-      item.completed = !item.completed;
-    },
-    destroy: (state, action) => {
-      const id = action.payload;
-      const filtered = state.items.filter((item) => item.id !== id);
-
-      state.items = filtered;
-    },
     changeActiveFilter: (state, action) => {
       state.activeFilter = action.payload;
     },
@@ -70,6 +75,33 @@ export const todosSlice = createSlice({
       state.isLoading.add = false;
       state.error.add = action.error.message;
     });
+    builder.addCase(toggleTodoAsync.pending, (state) => {
+      state.isLoading.toggle = true;
+    });
+    builder.addCase(toggleTodoAsync.fulfilled, (state, action) => {
+      const { id, completed } = action.payload;
+      const index = state.items.findIndex((item) => item.id === id);
+      state.items[index].completed = completed;
+      state.isLoading.toggle = false;
+    });
+    builder.addCase(toggleTodoAsync.rejected, (state, action) => {
+      state.isLoading.toggle = false;
+      state.error.toggle = action.error.message;
+    });
+    builder.addCase(removeTodoAsync.pending, (state) => {
+      state.isLoading.toggle = true;
+    });
+    builder.addCase(removeTodoAsync.fulfilled, (state, action) => {
+      const id = action.payload;
+      const index = state.items.findIndex((item) => item.id === id);
+
+      state.items.splice(index, 1);
+      state.isLoading.toggle = false;
+    });
+    builder.addCase(removeTodoAsync.rejected, (state, action) => {
+      state.isLoading.toggle = false;
+      state.error.toggle = action.error.message;
+    });
   },
 });
 
@@ -85,6 +117,5 @@ export const selectFilteredTodos = (state) => {
   );
 };
 
-export const { toggle, destroy, changeActiveFilter, clearCompleted } =
-  todosSlice.actions;
+export const { changeActiveFilter, clearCompleted } = todosSlice.actions;
 export default todosSlice.reducer;
